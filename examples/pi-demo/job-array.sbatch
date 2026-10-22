@@ -11,9 +11,6 @@
 
 set -e
 
-source "/path/to/conda/etc/profile.d/conda.sh"
-conda activate mypyenv
-
 echo "ARRAY_START array=$SLURM_ARRAY_JOB_ID part=$SLURM_ARRAY_TASK_ID host=$(hostname -s)"
-srun python myscript.py "$SLURM_ARRAY_TASK_ID"
+srun python3 myscript.py "$SLURM_ARRAY_TASK_ID"
 echo "ARRAY_COMPLETE array=$SLURM_ARRAY_JOB_ID part=$SLURM_ARRAY_TASK_ID"

@@ -11,9 +11,6 @@
 
 set -e
 
-source "/path/to/conda/etc/profile.d/conda.sh"
-conda activate mypyenv
-
 echo "JOB_START job=$SLURM_JOB_ID host=$(hostname -s)"
-srun python myscript.py
+srun python3 myscript.py
 echo "JOB_COMPLETE job=$SLURM_JOB_ID"

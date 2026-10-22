@@ -31,8 +31,8 @@ tutorial.html redirects to the corresponding main-page section.
   Distinct trial seeds preserve the same estimator: 4 * total hits / total points.
   The final COUNTS line makes later pooling possible without separate result files.
 - examples/pi-demo/job.sbatch: requests one node/task/CPU, 1 GiB and ten minutes.
-  Edit fictional node-a/shared and the Conda installation path for the site.
-  Activates mypyenv, prints job markers and launches srun python myscript.py.
+  Edit fictional node-a/shared for the site.
+  Prints job markers and launches srun python3 myscript.py; no Conda required.
   Submit with sbatch job.sbatch; no custom modes or --run argument required.
   set -e prevents success markers after failed activation or task execution.
 - An optional page snippet adds --check-only before the calculation.
@@ -41,8 +41,8 @@ tutorial.html redirects to the corresponding main-page section.
   inputs, runtime correctness or resource needs.
 - examples/pi-demo/job-array.sbatch: six one-CPU jobs, at most three concurrent.
   No node pin; several jobs may run on one machine. Each passes its array index
-  to the same Python script. Shared paths and mypyenv on eligible nodes are required.
-  Edit its Conda path too; submit with sbatch job-array.sbatch.
+  to the same Python script. Shared paths and Python 3 on eligible nodes are required.
+  Submit with sbatch job-array.sbatch.
 - examples/pi-demo/combine_results.py: small commented optional helper. Takes an
   expected log count and filenames, requires different completed logs with one
   COUNTS record each, and pools their integer hit/sample counts. It is not a
@@ -50,6 +50,8 @@ tutorial.html redirects to the corresponding main-page section.
 
 --check-only belongs only to the optional snippet, not native Slurm.
 Slurm --test-only is a separate scheduler test; it does not run the batch file.
+Optional Conda instructions explain where to add activation, replacing mypyenv
+with the user’s own environment name and adapting the installation path.
 The site does not submit jobs, change queues/configuration or run commands.
 
 styles.css/app.js provide themes, audience/section navigation, copy controls and
