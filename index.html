@@ -5,161 +5,311 @@
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <meta name="description" content="A practical guide to Slurm setup, job submission and maintenance, illustrated with a three-machine demonstration.">
   <meta name="color-scheme" content="light dark">
-  <title>Slurm Field Guide — setup, usage and maintenance</title>
+  <title>Everyday Slurm — from Python to results</title>
   <link rel="stylesheet" href="styles.css">
   <script src="app.js" defer></script>
+  <script src="tutorial.js" defer></script>
 </head>
 <body>
   <a class="skip-link" href="#main">Skip to content</a>
   <header class="topbar">
     <a class="brand" href="#overview" aria-label="Slurm Field Guide home"><span class="brand-mark" aria-hidden="true"><i></i><i></i><i></i></span>Slurm<span class="brand-label">FIELD GUIDE</span></a>
+    <nav class="audience-switch" aria-label="Guide audience">
+      <a href="index.html" aria-current="true">Users</a>
+      <a href="maintenance.html">Administrators</a>
+    </nav>
     <div class="topbar-actions"><button class="theme-toggle" type="button" aria-label="Switch to dark theme">◐ <span>Theme</span></button><button class="menu-toggle" type="button" aria-controls="sidebar" aria-expanded="false">Menu</button></div>
   </header>
   <div class="layout">
     <aside class="sidebar" id="sidebar">
-      <p class="nav-label">IN THIS GUIDE</p>
-      <nav aria-label="Guide sections">
-        <a href="#overview" class="active"><span>01</span> Overview</a>
-        <a href="#setup"><span>02</span> Setup</a>
-        <a href="#usage"><span>03</span> Everyday use</a>
-        <a href="#maintenance"><span>04</span> Maintenance</a>
-        <a href="#next"><span>05</span> What comes next</a>
+      <p class="nav-label">FOR USERS</p>
+      <nav aria-label="User guide">
+        <a href="#usage" class="active"><span>01</span> Prepare your folder</a>
+        <a href="#script"><span>02</span> Your Python script</a>
+        <a href="#batch"><span>03</span> Write the batch file</a>
+        <a href="#check"><span>04</span> Check before running</a>
+        <a href="#run"><span>05</span> Run the calculation</a>
+        <a href="#monitor"><span>06</span> Monitor &amp; cancel</a>
+        <a href="#scale"><span>07</span> Increase the workload</a>
+        <a href="#array"><span>08</span> Use available nodes</a>
+        <a href="#project"><span>09</span> Use your own code</a>
       </nav>
-      <div class="sidebar-note"><span class="status-dot" aria-hidden="true"></span>Setup. Usage. Maintenance.<p>General principles, practical examples. Your site's details belong in its local instructions.</p></div>
+      <div class="sidebar-note"><span class="status-dot" aria-hidden="true"></span>Your code. Your jobs.<p>Setup and maintenance live in the administrator guide. Switch above when you need them.</p></div>
       <a class="reference-link" href="https://slurm.schedmd.com/quickstart.html" target="_blank" rel="noopener noreferrer">Official Slurm docs <span aria-hidden="true">↗</span></a>
     </aside>
     <main id="main">
       <section class="hero" id="overview" aria-labelledby="hero-title">
-        <div class="eyebrow"><span class="status-dot" aria-hidden="true"></span> A PRACTICAL GUIDE TO SLURM</div>
+        <div class="eyebrow"><span class="status-dot" aria-hidden="true"></span> FOR USERS / EVERYDAY SLURM</div>
         <h1 id="hero-title">One place to <em>queue.</em></h1>
-        <p class="hero-description">Understand how to set up Slurm, submit jobs and maintain a cluster. General principles first, with a small demonstration to make them concrete.</p>
-        <div class="hero-actions"><a class="button" href="#usage">Submit your first job <span aria-hidden="true">↗</span></a><a class="text-link" href="#setup">Explore the setup <span aria-hidden="true">↓</span></a></div>
-        <p class="eyebrow">DEMONSTRATION / THREE MACHINES</p>
-        <div class="cluster-strip" aria-label="Illustrative three-machine demonstration, not a required cluster size"><div class="node"><span class="node-icon" aria-hidden="true">▦</span><div><strong>node-a</strong><small>Controller + compute</small></div></div><span class="connector" aria-hidden="true"></span><div class="node"><span class="node-icon" aria-hidden="true">▦</span><div><strong>node-b</strong><small>Compute</small></div></div><span class="connector" aria-hidden="true"></span><div class="node"><span class="node-icon" aria-hidden="true">▦</span><div><strong>node-c</strong><small>Compute</small></div></div></div>
-        <p class="caption">Three machines make the example easy to follow; they are not a requirement. A controller may be dedicated or also compute. Names are fictional; cluster size and roles depend on your site.</p>
-      </section>
-
-      <div class="principles"><article><span class="card-number">01 / ALLOCATE</span><h2>Ask for what you need.</h2><p>CPUs and RAM are reserved for your job. Your program still needs to use the requested workers or threads.</p></article><article><span class="card-number">02 / AGREE ON POLICY</span><h2>Scheduling is a choice.</h2><p>Access, priority and preemption depend on site policy. Desktop headroom and owner queues are useful options for shared workstations, not universal requirements.</p></article><article><span class="card-number">03 / LOCATE YOUR DATA</span><h2>Know where your files live.</h2><p>Slurm does not transfer packages or data. Use shared storage or choose a node where the required files and environment are available.</p></article></div>
-
-      <section class="content-section" id="setup" aria-labelledby="setup-title">
-        <div class="section-heading"><span class="eyebrow">02 / SETUP</span><h2 id="setup-title">The build, in ten steps.</h2><p>A practical starting sequence, not a universal installation recipe. Adapt the software, identity, storage and scheduling choices to your site.</p></div>
-        <div class="step-list">
-          <details><summary><span class="step-number">01</span><span>Inventory &amp; choose roles</span><span class="expand" aria-hidden="true">+</span></summary><div class="step-body"><p>Record CPU topology, RAM, operating system and networking. Choose a reliable controller; it may also run compute work. Keep the first experiment small.</p><p class="acceptance"><strong>Check:</strong> every selected node has a hardware inventory and an agreed role.</p></div></details>
-          <details><summary><span class="step-number">02</span><span>Establish hostname resolution</span><span class="expand" aria-hidden="true">+</span></summary><div class="step-body"><p>Make node names resolve consistently everywhere. Temporary host-file mappings work for an experiment, but DHCP address changes need manual updates.</p><p class="acceptance"><strong>Check:</strong> each node resolves and reaches all peers using their names.</p></div></details>
-          <details><summary><span class="step-number">03</span><span>Align accounts safely</span><span class="expand" aria-hidden="true">+</span></summary><div class="step-body"><p>Provide consistent job-user identities across nodes, through central identity services or coordinated local accounts. Existing IDs do not need changing if already consistent. Preserve recovery access; if migration is necessary, stop affected activity and back up account databases, ownership records and ACLs first.</p><p class="acceptance"><strong>Check:</strong> account identities, file ownership, access groups and recovery login are validated. Identity migration is a maintenance operation, not a mandatory step for every cluster.</p></div></details>
-          <details><summary><span class="step-number">04</span><span>Configure shared authentication</span><span class="expand" aria-hidden="true">+</span></summary><div class="step-body">
-            <p>Check repositories, time synchronization and service identities. In this demonstration, install <a href="https://github.com/dun/munge">MUNGE</a>: it creates and verifies tamper-resistant credentials carrying a user's identity, so Slurm services can trust requests across nodes. It does not create user accounts or schedule jobs.</p>
-            <p>Securely distribute one protected secret key to the participating nodes. Never put that key in documentation or a public repository.</p>
-            <p class="acceptance"><strong>Check:</strong> local and cross-node credential decoding succeeds.</p>
-          </div></details>
-          <details><summary><span class="step-number">05</span><span>Install consistent Slurm software</span><span class="expand" aria-hidden="true">+</span></summary><div class="step-body">
-            <p>Two common choices on Ubuntu:</p>
-            <p><strong>Ubuntu packages, with Ubuntu Pro where needed.</strong> Install through APT for distribution-integrated packages and updates. Ubuntu Pro is not required just to install Slurm; its <a href="https://documentation.ubuntu.com/security/security-updates/esm/">ESM Apps coverage</a> can provide additional security fixes for Universe packages such as Slurm. The packaged version may be older but receive backported fixes; check coverage and advisories for your Ubuntu release.</p>
-            <p><strong>Upstream Slurm from SchedMD.</strong> Choose a supported upstream release and follow the <a href="https://slurm.schedmd.com/quickstart_admin.html">official installation guide</a>, preferably building DEB packages on Ubuntu. This gives more control over the version and features, but you manage builds, dependencies and future security updates yourself.</p>
-            <p>Choose one route consistently across the cluster, deploy compatible versions and install controller/compute components according to each node's role. Keep services from starting prematurely.</p>
-            <p class="acceptance"><strong>Check:</strong> versions match and package installation is complete before daemon startup.</p>
-          </div></details>
-          <details><summary><span class="step-number">06</span><span>Configure resources &amp; start in stages</span><span class="expand" aria-hidden="true">+</span></summary><div class="step-body"><p>Use Slurm-detected topology to define node resources. Arrange consistent configuration delivery, cgroup isolation and persistent state paths. The demonstration distributes configuration files directly; other deployments may use Slurm's configless mode. Start the controller, then compute daemons, keeping test queues closed until ready.</p><p class="acceptance"><strong>Check:</strong> controller is reachable and every compute node registers with the expected resources.</p></div></details>
-          <details><summary><span class="step-number">07</span><span>Agree on resources, access &amp; priority</span><span class="expand" aria-hidden="true">+</span></summary><div class="step-body"><p>Choose partitions, access rules, limits and scheduling policy. For shared workstations, the demonstration reserves desktop headroom and uses non-preemptive owner queues. Dedicated clusters may instead use accounts, fair-share or other policies. These are choices, not Slurm-wide defaults.</p><p class="acceptance"><strong>Check:</strong> actual resource confinement, permitted/denied access and waiting-job order match the policy you chose.</p></div></details>
-          <details><summary><span class="step-number">08</span><span>Validate small jobs &amp; a real workload</span><span class="expand" aria-hidden="true">+</span></summary><div class="step-body"><p>Run tiny tasks on every node, test permitted and denied submissions, then check a real application's environment and imports. Open normal queues after the agreed limits and scheduling behavior pass.</p><p class="acceptance"><strong>Check:</strong> jobs use the correct identity, node and allocation. A partial application trial does not prove full-run completion or scientific correctness.</p></div></details>
-          <details><summary><span class="step-number">09</span><span>Make reboot recovery persistent</span><span class="expand" aria-hidden="true">+</span></summary><div class="step-body"><p>Enable services at boot, persist normal queue states and configure startup ordering/retries. Agree on automatic node-return policy and test idle reboots individually, controller last.</p><p class="acceptance"><strong>Check:</strong> services start without manual intervention, nodes rejoin, queues retain their intended states and a tiny task runs after each reboot.</p></div></details>
-          <details><summary><span class="step-number">10</span><span>Document everyday operation</span><span class="expand" aria-hidden="true">+</span></summary><div class="step-body"><p>Keep a private deployment record and a separate public/user guide. Provide simple templates, monitoring/cancellation instructions and maintenance expectations. Archive completed setup artifacts without deleting recovery evidence.</p><p class="acceptance"><strong>Check:</strong> users can submit a job without replaying setup scripts or exposing private logs.</p></div></details>
-        </div>
+        <p class="hero-description">One Python example, one clear sequence. Follow the numbered sections to prepare, check, run and monitor your calculation—then use the same workflow for your own project.</p>
+        <div class="tutorial-facts"><span>No administrator privileges</span><span>Python standard library</span><span>One node · one CPU</span></div>
       </section>
 
       <section class="content-section" id="usage" aria-labelledby="usage-title">
-        <div class="section-heading"><span class="eyebrow">03 / EVERYDAY USE</span><h2 id="usage-title">Create once. Submit when needed.</h2><p>A batch file describes the allocation and what to run. Log in as your ordinary job user, not the recovery administrator.</p></div>
-        <div class="notice"><strong>Before you start</strong><p>Examples use <code>node-a</code>, <code>shared</code>, <code>myenv</code> and placeholder paths. Replace them with your site's values. The runner, environment, working directory and inputs must exist on the execution node.</p></div>
-        <h3>1. Put a batch file beside your Python runner</h3>
-        <p>On the execution node, enter the project directory and create <code>job.sbatch</code>, for example with <code>nano job.sbatch</code>. This example is intentionally guarded until its placeholders are edited.</p>
-        <div class="code-block"><div class="code-header"><span>job.sbatch · Python + Conda</span><button class="copy-button" type="button">Copy</button></div><pre><code>#!/usr/bin/env bash
-#SBATCH --job-name=python-project
-#SBATCH --partition=shared
-#SBATCH --nodelist=node-a
-#SBATCH --nodes=1
-#SBATCH --ntasks=1
-#SBATCH --cpus-per-task=1
-#SBATCH --mem=4G
-#SBATCH --output=slurm-%j.out
+        <div class="section-heading"><span class="eyebrow">01 / EVERYDAY USE</span><h2 id="usage-title">Prepare your project folder.</h2><p>Follow one Python example from start to finish. Start with a small project directory, then work through the numbered sections in order.</p></div>
+        <div class="notice"><strong>Run commands on the cluster, not your laptop</strong><p>Log in using your ordinary job account. Your site must already have Slurm installed and grant you queue access. This guide does not install Slurm. <code>node-a</code> and <code>shared</code> are examples: ask your lab which real node and queue to use.</p></div>
+        <p>Create a small project directory on your chosen compute machine. These are two separate commands:</p>
+        <div class="code-block"><div class="code-header"><span>Create the directory</span><button class="copy-button" type="button">Copy</button></div><pre><code>mkdir -p ~/slurm-pi-demo</code></pre></div>
+        <div class="code-block"><div class="code-header"><span>Enter it</span><button class="copy-button" type="button">Copy</button></div><pre><code>cd ~/slurm-pi-demo</code></pre></div>
+        <p class="caption">Use this same directory for every command below. A home directory is not necessarily shared across nodes. We will pin the job to the machine containing these files.</p>
+        <nav class="download-links" aria-label="Download tutorial files"><a href="examples/pi-demo/myscript.py" download>myscript.py ↓</a><a href="examples/pi-demo/job.sbatch" download>job.sbatch ↓</a></nav>
+        <p class="caption">Downloads save on the machine running your browser. Transfer both files to the cluster project directory, or create them there with the copyable examples below.</p>
+      </section>
 
-set -e
-[[ -n ${SLURM_JOB_ID:-} ]] || { echo "Use sbatch, not bash"; exit 1; }
-CONDA_BASE=/path/to/conda
-CONDA_ENV=myenv
-DRIVER=runner.py
 
-[[ -r "$CONDA_BASE/etc/profile.d/conda.sh" && -r "$DRIVER" ]] || {
-    echo "Edit the environment and runner paths first"; exit 1;
-}
-source "$CONDA_BASE/etc/profile.d/conda.sh"
-conda activate "$CONDA_ENV"
-export OMP_NUM_THREADS=1 OPENBLAS_NUM_THREADS=1
-export MKL_NUM_THREADS=1 NUMEXPR_NUM_THREADS=1
 
-srun --mpi=none --ntasks=1 \
-    --cpus-per-task="$SLURM_CPUS_PER_TASK" python -u "$DRIVER"
-echo "JOB_COMPLETE"</code></pre></div>
-        <details class="example-explainer" id="batch-explanation">
-          <summary><span>Explain this example, line by line</span><span class="expand" aria-hidden="true">+</span></summary>
-          <div class="explanation-intro"><p>The top lines ask Slurm for resources; the remaining lines run inside the allocation. Expand any line or small group below. Blank lines are only for readability.</p><p><strong>Customize:</strong> queue, node, job label, resources, environment and runner. <strong>Usually keep:</strong> the submission guard, activation sequence and task launch structure.</p></div>
-          <div class="line-notes">
-            <details><summary><span class="line-number">01</span><code>#!/usr/bin/env bash</code><span class="expand" aria-hidden="true">+</span></summary><p>Selects Bash as the interpreter. A .sbatch file is a shell script with additional Slurm instructions; the extension itself does not run or schedule it.</p></details>
-            <details><summary><span class="line-number">02</span><code>#SBATCH --job-name=python-project</code><span class="expand" aria-hidden="true">+</span></summary><p>A readable label shown in job listings. Change it to identify your project; it is not a filename or a Python command.</p></details>
-            <details><summary><span class="line-number">03</span><code>#SBATCH --partition=shared</code><span class="expand" aria-hidden="true">+</span></summary><p>Selects a partition, often called a queue. Replace shared with a queue you may use at your site. There is no universal queue named shared. If your lab offers an owner queue, selecting it explicitly may provide owner priority.</p></details>
-            <details><summary><span class="line-number">04</span><code>#SBATCH --nodelist=node-a</code><span class="expand" aria-hidden="true">+</span></summary><p>Pins this example to a particular machine. Replace node-a with the real execution node containing your environment, code and data. Remove this line only when those requirements are available on every eligible node; Slurm can then choose among them.</p></details>
-            <details><summary><span class="line-number">05–06</span><code>--nodes=1 · --ntasks=1</code><span class="expand" aria-hidden="true">+</span></summary><p>Requests one node and one Slurm task: one launched Python program. That program can create local workers or threads within its CPU allocation. Tasks are not the same as Joblib workers. Changing these numbers alone does not make an ordinary Python program distributed across machines.</p></details>
-            <details><summary><span class="line-number">07</span><code>#SBATCH --cpus-per-task=1</code><span class="expand" aria-hidden="true">+</span></summary><p>Requests one CPU slot for the task. For a parallel program, increase it and configure the program's worker/thread count accordingly, commonly by reading SLURM_CPUS_PER_TASK. Slots normally refer to logical CPUs, but topology and allocation rules can reserve whole cores. More requested CPUs do not automatically make code faster.</p></details>
-            <details><summary><span class="line-number">08</span><code>#SBATCH --mem=4G</code><span class="expand" aria-hidden="true">+</span></summary><p>Requests about 4 GiB of total memory per node, not per Python worker. Include the parent process, all workers, arrays and temporary buffers. This is an example estimate; choose a budget for your workload. Exceeding an enforced memory limit can terminate the job.</p></details>
-            <details><summary><span class="line-number">09</span><code>#SBATCH --output=slurm-%j.out</code><span class="expand" aria-hidden="true">+</span></summary><p>Writes output to a log with the job ID replacing %j, such as slurm-123.out. With no separate error option, standard error normally goes there too. This relative path uses the job's working directory on the execution node; the directory must already exist and be writable.</p></details>
-            <details><summary><span class="line-number">11</span><code>set -e</code><span class="expand" aria-hidden="true">+</span></summary><p>Makes Bash exit on many ordinary command failures so a failed activation or task does not misleadingly reach JOB_COMPLETE. It is not a complete error-handling framework: shell conditionals and other contexts have exceptions.</p></details>
-            <details><summary><span class="line-number">12</span><code>[[ -n ${SLURM_JOB_ID:-} ]] || …</code><span class="expand" aria-hidden="true">+</span></summary><p>Checks that a Slurm job ID exists. If not, it prints a message and exits. This helps catch accidentally running bash job.sbatch outside Slurm; it is a convenience check, not a security boundary. Submit using sbatch instead.</p></details>
-            <details><summary><span class="line-number">13–15</span><code>CONDA_BASE · CONDA_ENV · DRIVER</code><span class="expand" aria-hidden="true">+</span></summary><p>These are shell variables, not Slurm directives. Set CONDA_BASE to the actual Conda installation directory, CONDA_ENV to your environment name, and DRIVER to your Python runner. The runner can be beside this batch file, but execution uses the working directory, not automatically the batch file's original location. Submit from the project folder or specify --chdir.</p></details>
-            <details><summary><span class="line-number">17–19</span><code>[[ -r …conda.sh &amp;&amp; -r "$DRIVER" ]]</code><span class="expand" aria-hidden="true">+</span></summary><p>Checks that the Conda initialization file and Python runner can be read on the chosen node. Otherwise, the block prints a diagnostic and exits with failure. It does not validate every imported package or input file—those must also be available.</p></details>
-            <details><summary><span class="line-number">20–21</span><code>source …conda.sh · conda activate …</code><span class="expand" aria-hidden="true">+</span></summary><p>Initializes Conda in the batch shell, then activates the requested environment. The job should not depend on whether your interactive terminal currently shows base or another environment. Different environment tools need their own initialization sequence.</p></details>
-            <details><summary><span class="line-number">22–23</span><code>export …NUM_THREADS=1</code><span class="expand" aria-hidden="true">+</span></summary><p>Limits common numerical libraries to one thread each. This fits the one-CPU example and helps avoid nested threads for multiprocess workloads. For a threaded numerical application, deliberately adjust these values to match the allocation instead of assuming one is always correct.</p></details>
-            <details><summary><span class="line-number">25–26</span><code>srun … python -u "$DRIVER"</code><span class="expand" aria-hidden="true">+</span></summary><p>srun launches the Python task inside the existing allocation. --ntasks=1 launches one program; --cpus-per-task passes the allocated CPU count to the task. --mpi=none makes clear that this is not an MPI launch. Python -u reduces output buffering so progress appears promptly. The backslash continues the shell command onto the next line; keep it as the last character on that line.</p></details>
-            <details><summary><span class="line-number">27</span><code>echo "JOB_COMPLETE"</code><span class="expand" aria-hidden="true">+</span></summary><p>Prints a completion marker after the task returns successfully. It shows that this wrapper reached its end, not that scientific results are correct. Preserve the application's logs/results and inspect its own validation messages.</p></details>
+      <section class="content-section" id="script" aria-labelledby="script-title">
+        <div class="section-heading"><span class="eyebrow">02 / YOUR PYTHON SCRIPT</span><h2 id="script-title">A random estimate of π.</h2><p>Sample points uniformly from the square <code>[0, 1] × [0, 1]</code>. Count those whose distance from the origin <code>(0, 0)</code> is at most one. The region we count is a <strong>quarter of the unit disk</strong>, centred at the square's bottom-left corner.</p></div>
+        <div class="monte-carlo-explanation">
+          <figure class="mc-figure">
+            <svg viewBox="0 0 380 365" role="img" aria-labelledby="mc-title mc-description" data-total="80" data-inside="68">
+              <title id="mc-title">The unit square and the quarter of the unit disk inside it</title>
+              <desc id="mc-description">The square runs from zero to one on both axes. The unit circle is centred at the origin, the square's bottom-left corner. The shaded quarter-disk contains exactly the points with x squared plus y squared at most one. Green dots are counted; crosses in the top-right region are not.</desc>
+              <rect class="mc-square" x="60" y="60" width="255" height="255"/>
+              <path class="mc-region" d="M60,315 L315,315 A255,255 0 0 0 60,60 Z"/>
+              <path class="mc-arc" d="M315,315 A255,255 0 0 0 60,60"/>
+              <circle class="mc-inside" data-sample="inside" data-x="0.28830337" data-y="0.39779434" cx="133.52" cy="213.56" r="3"/>
+              <circle class="mc-inside" data-sample="inside" data-x="0.85759553" data-y="0.43387949" cx="278.69" cy="204.36" r="3"/>
+              <circle class="mc-inside" data-sample="inside" data-x="0.49766557" data-y="0.02381849" cx="186.90" cy="308.93" r="3"/>
+              <path class="mc-outside" data-sample="outside" data-x="0.70635632" data-y="0.98507273" d="M237.12,60.81 l6,6 m-6,0 l6,-6"/>
+              <circle class="mc-inside" data-sample="inside" data-x="0.42254037" data-y="0.24141565" cx="167.75" cy="253.44" r="3"/>
+              <circle class="mc-inside" data-sample="inside" data-x="0.62766927" data-y="0.41943885" cx="220.06" cy="208.04" r="3"/>
+              <circle class="mc-inside" data-sample="inside" data-x="0.69312647" data-y="0.57019552" cx="236.75" cy="169.60" r="3"/>
+              <circle class="mc-inside" data-sample="inside" data-x="0.94030311" data-y="0.27342753" cx="299.78" cy="245.28" r="3"/>
+              <circle class="mc-inside" data-sample="inside" data-x="0.19769831" data-y="0.00779895" cx="110.41" cy="313.01" r="3"/>
+              <circle class="mc-inside" data-sample="inside" data-x="0.77704103" data-y="0.46059796" cx="258.15" cy="197.55" r="3"/>
+              <circle class="mc-inside" data-sample="inside" data-x="0.06093854" data-y="0.96697068" cx="75.54" cy="68.42" r="3"/>
+              <circle class="mc-inside" data-sample="inside" data-x="0.11037644" data-y="0.57441429" cx="88.15" cy="168.52" r="3"/>
+              <circle class="mc-inside" data-sample="inside" data-x="0.17402842" data-y="0.88548372" cx="104.38" cy="89.20" r="3"/>
+              <circle class="mc-inside" data-sample="inside" data-x="0.02527908" data-y="0.90295504" cx="66.45" cy="84.75" r="3"/>
+              <circle class="mc-inside" data-sample="inside" data-x="0.47962086" data-y="0.14954016" cx="182.30" cy="276.87" r="3"/>
+              <circle class="mc-inside" data-sample="inside" data-x="0.56715651" data-y="0.42116173" cx="204.62" cy="207.60" r="3"/>
+              <circle class="mc-inside" data-sample="inside" data-x="0.46482149" data-y="0.22127364" cx="178.53" cy="258.58" r="3"/>
+              <circle class="mc-inside" data-sample="inside" data-x="0.74313575" data-y="0.27625138" cx="249.50" cy="244.56" r="3"/>
+              <circle class="mc-inside" data-sample="inside" data-x="0.56530234" data-y="0.11097837" cx="204.15" cy="286.70" r="3"/>
+              <circle class="mc-inside" data-sample="inside" data-x="0.50479043" data-y="0.53191823" cx="188.72" cy="179.36" r="3"/>
+              <circle class="mc-inside" data-sample="inside" data-x="0.43367348" data-y="0.58468966" cx="170.59" cy="165.90" r="3"/>
+              <circle class="mc-inside" data-sample="inside" data-x="0.79043808" data-y="0.18694945" cx="261.56" cy="267.33" r="3"/>
+              <circle class="mc-inside" data-sample="inside" data-x="0.27523739" data-y="0.74774108" cx="130.19" cy="124.33" r="3"/>
+              <path class="mc-outside" data-sample="outside" data-x="0.95513284" data-y="0.73387992" d="M300.56,124.86 l6,6 m-6,0 l6,-6"/>
+              <path class="mc-outside" data-sample="outside" data-x="0.70425116" data-y="0.89492313" d="M236.58,83.79 l6,6 m-6,0 l6,-6"/>
+              <circle class="mc-inside" data-sample="inside" data-x="0.16647845" data-y="0.77331106" cx="102.45" cy="117.81" r="3"/>
+              <path class="mc-outside" data-sample="outside" data-x="0.82382153" data-y="0.76786853" d="M267.07,116.19 l6,6 m-6,0 l6,-6"/>
+              <circle class="mc-inside" data-sample="inside" data-x="0.59438651" data-y="0.44951878" cx="211.57" cy="200.37" r="3"/>
+              <circle class="mc-inside" data-sample="inside" data-x="0.48255771" data-y="0.61028896" cx="183.05" cy="159.38" r="3"/>
+              <circle class="mc-inside" data-sample="inside" data-x="0.47290518" data-y="0.72297543" cx="180.59" cy="130.64" r="3"/>
+              <path class="mc-outside" data-sample="outside" data-x="0.91110703" data-y="0.66168855" d="M289.33,143.27 l6,6 m-6,0 l6,-6"/>
+              <circle class="mc-inside" data-sample="inside" data-x="0.36224299" data-y="0.74541083" cx="152.37" cy="124.92" r="3"/>
+              <circle class="mc-inside" data-sample="inside" data-x="0.19169838" data-y="0.98017870" cx="108.88" cy="65.05" r="3"/>
+              <circle class="mc-inside" data-sample="inside" data-x="0.18911318" data-y="0.85303737" cx="108.22" cy="97.48" r="3"/>
+              <circle class="mc-inside" data-sample="inside" data-x="0.26381851" data-y="0.73501969" cx="127.27" cy="127.57" r="3"/>
+              <path class="mc-outside" data-sample="outside" data-x="0.89352320" data-y="0.94356419" d="M284.85,71.39 l6,6 m-6,0 l6,-6"/>
+              <circle class="mc-inside" data-sample="inside" data-x="0.41914608" data-y="0.35951369" cx="166.88" cy="223.32" r="3"/>
+              <circle class="mc-inside" data-sample="inside" data-x="0.76013458" data-y="0.25262538" cx="253.83" cy="250.58" r="3"/>
+              <circle class="mc-inside" data-sample="inside" data-x="0.48886858" data-y="0.20487438" cx="184.66" cy="262.76" r="3"/>
+              <path class="mc-outside" data-sample="outside" data-x="0.76231811" data-y="0.79524726" d="M251.39,109.21 l6,6 m-6,0 l6,-6"/>
+              <circle class="mc-inside" data-sample="inside" data-x="0.17650702" data-y="0.58569818" cx="105.01" cy="165.65" r="3"/>
+              <path class="mc-outside" data-sample="outside" data-x="0.49702933" data-y="0.98797976" d="M183.74,60.07 l6,6 m-6,0 l6,-6"/>
+              <circle class="mc-inside" data-sample="inside" data-x="0.23937347" data-y="0.35766198" cx="121.04" cy="223.80" r="3"/>
+              <circle class="mc-inside" data-sample="inside" data-x="0.53862933" data-y="0.21731679" cx="197.35" cy="259.58" r="3"/>
+              <circle class="mc-inside" data-sample="inside" data-x="0.47178635" data-y="0.41807246" cx="180.31" cy="208.39" r="3"/>
+              <circle class="mc-inside" data-sample="inside" data-x="0.28977584" data-y="0.37003076" cx="133.89" cy="220.64" r="3"/>
+              <path class="mc-outside" data-sample="outside" data-x="0.69316864" data-y="0.76989196" d="M233.76,115.68 l6,6 m-6,0 l6,-6"/>
+              <circle class="mc-inside" data-sample="inside" data-x="0.65750971" data-y="0.59104607" cx="227.66" cy="164.28" r="3"/>
+              <circle class="mc-inside" data-sample="inside" data-x="0.19415377" data-y="0.03986597" cx="109.51" cy="304.83" r="3"/>
+              <circle class="mc-inside" data-sample="inside" data-x="0.13266160" data-y="0.78447672" cx="93.83" cy="114.96" r="3"/>
+              <circle class="mc-inside" data-sample="inside" data-x="0.34382443" data-y="0.59137704" cx="147.68" cy="164.20" r="3"/>
+              <circle class="mc-inside" data-sample="inside" data-x="0.10070404" data-y="0.62345298" cx="85.68" cy="156.02" r="3"/>
+              <circle class="mc-inside" data-sample="inside" data-x="0.31120914" data-y="0.62265044" cx="139.36" cy="156.22" r="3"/>
+              <circle class="mc-inside" data-sample="inside" data-x="0.46217380" data-y="0.08436213" cx="177.85" cy="293.49" r="3"/>
+              <circle class="mc-inside" data-sample="inside" data-x="0.10416164" data-y="0.89093625" cx="86.56" cy="87.81" r="3"/>
+              <path class="mc-outside" data-sample="outside" data-x="0.89078959" data-y="0.77112819" d="M284.15,115.36 l6,6 m-6,0 l6,-6"/>
+              <path class="mc-outside" data-sample="outside" data-x="0.37874812" data-y="0.95329302" d="M153.58,68.91 l6,6 m-6,0 l6,-6"/>
+              <circle class="mc-inside" data-sample="inside" data-x="0.30738998" data-y="0.54515582" cx="138.38" cy="175.99" r="3"/>
+              <circle class="mc-inside" data-sample="inside" data-x="0.72226721" data-y="0.06459811" cx="244.18" cy="298.53" r="3"/>
+              <circle class="mc-inside" data-sample="inside" data-x="0.39781679" data-y="0.22656321" cx="161.44" cy="257.23" r="3"/>
+              <circle class="mc-inside" data-sample="inside" data-x="0.36302782" data-y="0.12340939" cx="152.57" cy="283.53" r="3"/>
+              <circle class="mc-inside" data-sample="inside" data-x="0.25286862" data-y="0.38232906" cx="124.48" cy="217.51" r="3"/>
+              <circle class="mc-inside" data-sample="inside" data-x="0.51000980" data-y="0.30630373" cx="190.05" cy="236.89" r="3"/>
+              <circle class="mc-inside" data-sample="inside" data-x="0.45844985" data-y="0.46697859" cx="176.90" cy="195.92" r="3"/>
+              <circle class="mc-inside" data-sample="inside" data-x="0.77553239" data-y="0.28131688" cx="257.76" cy="243.26" r="3"/>
+              <circle class="mc-inside" data-sample="inside" data-x="0.21403980" data-y="0.83143368" cx="114.58" cy="102.98" r="3"/>
+              <circle class="mc-inside" data-sample="inside" data-x="0.38405545" data-y="0.14110997" cx="157.93" cy="279.02" r="3"/>
+              <circle class="mc-inside" data-sample="inside" data-x="0.30760735" data-y="0.36565199" cx="138.44" cy="221.76" r="3"/>
+              <circle class="mc-inside" data-sample="inside" data-x="0.12023863" data-y="0.44648761" cx="90.66" cy="201.15" r="3"/>
+              <circle class="mc-inside" data-sample="inside" data-x="0.02509578" data-y="0.79068021" cx="66.40" cy="113.38" r="3"/>
+              <circle class="mc-inside" data-sample="inside" data-x="0.21938318" data-y="0.02089250" cx="115.94" cy="309.67" r="3"/>
+              <circle class="mc-inside" data-sample="inside" data-x="0.32260292" data-y="0.86574633" cx="142.26" cy="94.23" r="3"/>
+              <circle class="mc-inside" data-sample="inside" data-x="0.65338169" data-y="0.38650162" cx="226.61" cy="216.44" r="3"/>
+              <circle class="mc-inside" data-sample="inside" data-x="0.83938168" data-y="0.02601600" cx="274.04" cy="308.37" r="3"/>
+              <path class="mc-outside" data-sample="outside" data-x="0.51530061" data-y="0.98254898" d="M188.40,61.45 l6,6 m-6,0 l6,-6"/>
+              <circle class="mc-inside" data-sample="inside" data-x="0.57978581" data-y="0.21663791" cx="207.85" cy="259.76" r="3"/>
+              <circle class="mc-inside" data-sample="inside" data-x="0.45572059" data-y="0.55649997" cx="176.21" cy="173.09" r="3"/>
+              <circle class="mc-inside" data-sample="inside" data-x="0.34228606" data-y="0.93870332" cx="147.28" cy="75.63" r="3"/>
+              <circle class="mc-inside" data-sample="inside" data-x="0.37395962" data-y="0.36870217" cx="155.36" cy="220.98" r="3"/>
+              <circle class="mc-inside" data-sample="inside" data-x="0.22368155" data-y="0.77274453" cx="117.04" cy="117.95" r="3"/>
+              <path class="mc-axes" d="M60,42 V315 H336"/>
+              <circle class="mc-origin" cx="60" cy="315" r="4"/>
+              <g class="mc-labels"><text x="43" y="336">0</text><text x="311" y="336">1</text><text x="40" y="65">1</text><text x="344" y="320">x</text><text x="54" y="31">y</text><text x="60" y="357">Centre of the circle: (0, 0)</text></g>
+            </svg>
+            <figcaption><span class="mc-legend"><span><i class="mc-dot" aria-hidden="true"></i>Counted: x² + y² ≤ 1</span><span><b class="mc-cross" aria-hidden="true">×</b>Not counted: x² + y² &gt; 1</span></span>In this illustration, 68 of 80 points are counted, giving <code>4 × 68/80 = 3.40</code>. Your Python run generates its own points.</figcaption>
+          </figure>
+          <div class="mc-reasoning">
+            <h3>Why does counting points estimate π?</h3>
+            <ol>
+              <li><strong>Specify the geometry.</strong> The square has side length 1 and area 1. The full disk <code>x² + y² ≤ 1</code> has radius 1, centre <code>(0, 0)</code> and area π.</li>
+              <li><strong>Take its first-quadrant part.</strong> Inside our square, that disk occupies a quarter-disk of area <code>π/4</code>. Its curved boundary is the arc <code>x² + y² = 1</code>, from <code>(1, 0)</code> to <code>(0, 1)</code>.</li>
+              <li><strong>Use uniform sampling.</strong> Draw X and Y independently, each uniformly on <code>[0, 1]</code>. The probability that the sampled point lies in the quarter-disk equals the area ratio: <code>P(X² + Y² ≤ 1) = (π/4) / 1 = π/4</code>.</li>
+              <li><strong>Estimate that probability.</strong> If <code>N_inside</code> of N points satisfy the inequality, then <code>N_inside / N</code> estimates <code>π/4</code>. Therefore <code>π̂ = 4 × N_inside / N</code>.</li>
+            </ol>
+            <p class="caption">“Quarter-disk” means the filled region; “quarter-circle” means the curved arc, not the filled region. The area identity is exact. The approximation comes from replacing a probability with a finite sample fraction.</p>
           </div>
-          <p class="explanation-footnote">Command-line sbatch options can override matching #SBATCH settings. These examples do not set a time limit; the site's default applies. For full option definitions, see the <a href="https://slurm.schedmd.com/sbatch.html" target="_blank" rel="noopener noreferrer">official sbatch reference</a>.</p>
-        </details>
-        <p class="caption">One CPU and 4 GiB are illustrative starting values, not a universal resource recommendation. No time limit is specified; your site's queue policy determines the default.</p>
-        <h3>2. Check, then submit</h3>
-        <div class="code-block"><div class="code-header"><span>From the project directory</span><button class="copy-button" type="button">Copy</button></div><pre><code>bash -n job.sbatch       # Syntax check; does not run Python.
-sbatch job.sbatch        # Real submission; runs when allocated.</code></pre></div>
-        <details class="command-explainer"><summary>What do these two commands do? <span class="expand" aria-hidden="true">+</span></summary><div class="step-body"><p><code>bash -n job.sbatch</code> checks Bash syntax without executing the file. It does not validate Slurm options, packages or Python code. No output usually means the shell syntax passed.</p><p><code>sbatch job.sbatch</code> submits one job to the scheduler. A returned job ID means accepted, not necessarily started or completed. Repeating sbatch submits another job; do not resubmit just because the first is waiting.</p></div></details>
-        <p><code>sbatch</code> returns a job ID. It transfers the batch script, not your project files. The default working directory is the submission directory, and the log appears on the execution node. You do not need to make the file executable or activate Conda in your login shell.</p>
-        <p>If your installation requires an explicit configuration path, prefix commands with <code>env SLURM_CONF=/etc/slurm/slurm.conf</code>. Keep <code>#SBATCH</code> directives before executable commands; shell variables are not expanded in those directives.</p>
-        <h3>3. Monitor and read the log</h3>
-        <div class="code-block"><div class="code-header"><span>Replace 123 with your job ID</span><button class="copy-button" type="button">Copy</button></div><pre><code>squeue -u "$USER"             # Your waiting/running jobs.
-scontrol show job 123         # Allocation and output paths.
-tail -f slurm-123.out         # Watch output; Ctrl+C stops watching.
-scancel 123                  # Deliberately cancel this job.</code></pre></div>
-        <details class="command-explainer"><summary>Explain monitoring and cancellation <span class="expand" aria-hidden="true">+</span></summary><div class="step-body"><p><code>squeue -u "$USER"</code> filters waiting/running jobs to your login user. PENDING means waiting for allocation; RUNNING means execution; COMPLETING means cleanup.</p><p><code>scontrol show job 123</code> reads that job's current details, including requested resources, working/output paths and state. Completed records may later expire.</p><p><code>tail -f slurm-123.out</code> follows new log lines on the machine containing the log. Ctrl+C exits the viewer; it does not cancel the job.</p><p><code>scancel 123</code> cancels that specific job. It changes state and may lose unfinished work: only use it deliberately, with your actual job ID. It is not a monitoring command.</p></div></details>
-        <p>A job disappearing from the queue is not proof of success. Read its completion/error messages and, while the record is retained, its job state and exit code. Cancellation can lose unfinished work. Persistent accounting is a separate feature; keep important logs and results.</p>
-        <div class="two-column"><article class="mini-card"><span class="card-number">RESOURCE REQUESTS</span><h3>Allocation ≠ parallelism</h3><p>For one local parallel Python program, usually request one task with multiple CPUs. Configure its worker count from <code>SLURM_CPUS_PER_TASK</code>; requesting four CPUs alone does not create four workers. Memory is the total per-node reservation, including all workers.</p></article><article class="mini-card"><span class="card-number">OWNER QUEUES</span><h3>Priority is an explicit choice</h3><p>If your site offers an owner queue, submit to that queue to use it. Owner identity does not automatically raise a shared-queue job's tier. With non-preemption, an owner may still wait for a running guest.</p></article></div>
+        </div>
+        <div class="two-column"><article class="mini-card"><span class="card-number">SAMPLES</span><h3>Points in one trial</h3><p><code>samples = 10000</code> draws 10,000 points per trial. The test <code>x*x + y*y &lt;= 1</code> counts the points inside the quarter-disk.</p></article><article class="mini-card"><span class="card-number">REALISATIONS</span><h3>Repeat the experiment</h3><p><code>realisations = 5</code> repeats the experiment five times. We pool the hits from all 50,000 points to estimate π. Change these two settings when you need more work.</p></article></div>
+        <p>Create <code>myscript.py</code> in your project folder:</p>
+        <div class="code-block"><div class="code-header"><span>Open an editor on the cluster</span><button class="copy-button" type="button">Copy</button></div><pre><code>nano myscript.py</code></pre></div>
+        <p>Copy the code below, save with Ctrl+O then Enter, and exit with Ctrl+X. Another editor is fine too.</p>
+        <div class="code-block" data-example-source="examples/pi-demo/myscript.py"><div class="code-header"><span>myscript.py · the complete calculation</span><button class="copy-button" type="button" disabled>Copy</button></div><pre><code>Loading downloadable source…</code></pre></div>
+        <noscript><p>Use the <a href="examples/pi-demo/myscript.py" download>myscript.py download</a> to read the code.</p></noscript>
+        <p><strong>The calculation:</strong> the inner loop draws points and counts hits; the outer loop repeats trials. After each trial, <code>4 * inside / total_points</code> prints the estimate using all points so far. No arrays of points, external packages or JSON files are needed.</p>
+        <details class="command-explainer"><summary>What are the part number, random seed and COUNTS line? <span class="expand" aria-hidden="true">+</span></summary><div class="step-body"><p>For now, leave <code>part = 0</code>. A fixed seed makes repeated runs reproducible; each trial gets a different seed. The optional argument read through <code>sys.argv</code> is used only in the later array lesson to assign different random sequences to different jobs. Python does not need to know machine names.</p><p>The final <code>COUNTS</code> line records how many points were inside and how many were sampled. It lets the optional combining script pool results later. It does not change the estimator.</p></div></details>
+        <p>Optional: with the small default settings only, test it once locally:</p>
+        <div class="code-block"><div class="code-header"><span>Small local test · not a Slurm job</span><button class="copy-button" type="button">Copy</button></div><pre><code>python3 myscript.py</code></pre></div>
+        <p>Expect five <code>Trial … pi estimate = …</code> lines, <code>COUNTS</code> and <code>SIMULATION_COMPLETE</code>. Heavy runs belong in Slurm; do not run this local test after increasing the workload substantially.</p>
       </section>
 
-      <section class="content-section" id="maintenance" aria-labelledby="maintenance-title">
-        <div class="section-heading"><span class="eyebrow">04 / MAINTENANCE</span><h2 id="maintenance-title">Keep the cluster predictable.</h2><p>Administrator-led maintenance should protect both Slurm jobs and ordinary desktop work.</p></div>
-        <div class="maintenance-grid"><article><span class="card-number">BEFORE A REBOOT</span><h3>Coordinate, exclude, wait.</h3><p>Agree on a maintenance window. Check local sessions and background work, prevent new allocations to the target, and let existing jobs finish. A drained node stays excluded until deliberately restored.</p></article><article><span class="card-number">AFTER A REBOOT</span><h3>Verify before restoring.</h3><p>Check authentication and compute services, controller connectivity, hostname resolution and node health. Confirm the intended queue states; run a tiny job after safely restoring the node.</p></article><article><span class="card-number">WHEN AN ADDRESS CHANGES</span><h3>Repair name resolution.</h3><p>Update the affected hostname mapping consistently on all nodes. Verify resolution and connectivity before changing daemon state. Slurm configurations using names usually need no IP edit or reinstall.</p></article><article><span class="card-number">WHEN SETUP FILES ACCUMULATE</span><h3>Archive, don't erase.</h3><p>Keep completed checkpoints, logs and package/build artifacts in a private indexed archive. Preserve ownership and permissions, and record changed paths. Organization is not an independent backup.</p></article></div>
-        <details class="admin-detail"><summary>Administrator command reference <span class="expand" aria-hidden="true">+</span></summary><div class="step-body"><p>Use the real node name and your site's configuration path. These are administrator examples, not an unattended reboot script. <code>DRAIN</code> blocks new allocations; it does not cancel running jobs.</p><div class="code-block"><div class="code-header"><span>Maintenance exclusion and read-only checks</span><button class="copy-button" type="button">Copy</button></div><pre><code># Before maintenance: exclude the target, then wait for work to finish.
-sudo scontrol update NodeName=node-a State=DRAIN Reason="planned maintenance"
-sudo squeue -w node-a
-
-# After maintenance: inspect before deciding whether to restore it.
-systemctl is-enabled munge slurmd
-systemctl is-active munge slurmd
-sudo scontrol ping
-sudo scontrol show node node-a
-sudo sinfo --all -N -o '%N %P %a %t'
-
-# On the controller node, also check its controller service.
-systemctl is-active slurmctld</code></pre></div><p>Only after local health is verified, an administrator may restore a deliberately drained node with <code>sudo scontrol update NodeName=node-a State=RESUME</code>. Do not blindly restore a node with a hardware, identity or configuration failure.</p></div></details>
-        <div class="notice warning"><strong>What automatic recovery does—and doesn't—mean</strong><p>Boot-enabled services and persistent queue states bring the cluster back, not the in-memory state of a running program. A broad automatic-return policy such as <code>ReturnToService=2</code> can restore a manually DOWN node on valid registration; use deliberate DRAIN maintenance exclusion. Changed DHCP mappings can still prevent recovery.</p></div>
+      <section class="content-section" id="batch" aria-labelledby="batch-title">
+        <div class="section-heading"><span class="eyebrow">03 / YOUR BATCH FILE</span><h2 id="batch-title">Tell Slurm what to run.</h2><p>Python contains the calculation. The batch file requests resources and runs it when those resources are allocated.</p></div>
+        <div class="code-block"><div class="code-header"><span>Create the second file</span><button class="copy-button" type="button">Copy</button></div><pre><code>nano job.sbatch</code></pre></div>
+        <div class="code-block" data-example-source="examples/pi-demo/job.sbatch"><div class="code-header"><span>job.sbatch · edit the node and queue</span><button class="copy-button" type="button" disabled>Copy</button></div><pre><code>Loading downloadable source…</code></pre></div>
+        <noscript><p>Use the <a href="examples/pi-demo/job.sbatch" download>job.sbatch download</a> to read the source.</p></noscript>
+        <div class="notice warning"><strong>Edit before submitting</strong><p>Replace <code>node-a</code> with the real compute machine containing your project folder. Use a queue you can access instead of <code>shared</code> if necessary. Submit as your own job user, without sudo. Both files must be available in the project directory on that machine.</p></div>
+        <details class="example-explainer" id="batch-explanation"><summary><span>Which lines matter, and why?</span><span class="expand" aria-hidden="true">+</span></summary><div class="line-notes">
+          <details><summary><code>#SBATCH --partition · --nodelist</code><span class="expand" aria-hidden="true">+</span></summary><p>Choose an allowed queue and the machine containing the project. Slurm transfers the batch file, not neighboring Python or input files.</p></details>
+          <details><summary><code>--nodes=1 · --ntasks=1 · --cpus-per-task=1</code><span class="expand" aria-hidden="true">+</span></summary><p>One machine, one Python task, one CPU slot. This code is serial: more requested CPUs do not create workers.</p></details>
+          <details><summary><code>--mem=1G · --time=00:10:00</code><span class="expand" aria-hidden="true">+</span></summary><p>Request 1 GiB total RAM and a ten-minute job deadline. These are teaching choices, not lab-wide limits. Slurm may stop the job at the deadline or if it exceeds enforced memory limits.</p></details>
+          <details><summary><code>--job-name · --output=slurm-pi-%j.out</code><span class="expand" aria-hidden="true">+</span></summary><p>The name labels your job; %j becomes its job ID in the log filename. Printed output and ordinary errors go into that log.</p></details>
+          <details><summary><code>source … conda.sh · conda activate mypyenv</code><span class="expand" aria-hidden="true">+</span></summary><p>Load Conda in the batch shell, then select the Python environment named mypyenv. Replace /path/to/conda with your actual Conda installation path. The environment must already exist on the execution machine; activation does not install packages.</p></details>
+          <details><summary><code>srun python myscript.py</code><span class="expand" aria-hidden="true">+</span></summary><p>Launch the calculation using Python from the activated environment, inside Slurm's allocated resources.</p></details>
+          <details><summary><code>set -e · JOB_START · JOB_COMPLETE</code><span class="expand" aria-hidden="true">+</span></summary><p>The echo lines mark the beginning and successful end in the log. set -e stops this simple script if environment setup or srun fails, so it does not falsely print JOB_COMPLETE. Slurm supplies $SLURM_JOB_ID; hostname reports the execution machine.</p></details>
+        </div></details>
+        <p>The π calculation itself needs no extra packages. We include <code>mypyenv</code> to show the same environment-selection pattern you can reuse for your own analysis. If you use system Python instead, remove both Conda lines and use <code>srun python3 myscript.py</code>.</p>
+        <p>Submit from the project directory: Slurm uses that directory by default. Run <code>conda info --base</code> in your normal Conda-enabled terminal to find the installation prefix, then replace <code>/path/to/conda</code> in the batch file. Use your existing environment name if it is not mypyenv.</p>
       </section>
 
-      <section class="content-section" id="next" aria-labelledby="next-title"><div class="section-heading"><span class="eyebrow">05 / WHAT COMES NEXT</span><h2 id="next-title">A working base. Room to grow.</h2><p>This guide's examples use single-node CPU jobs for clarity, not because Slurm is limited to them. Storage, GPUs, distributed applications and accounting may be essential from the start at your site.</p></div><ol class="roadmap"><li><span>01</span><div><h3>Make projects portable across nodes</h3><p>Choose environment replication, containers or shared storage, with code and inputs accessible everywhere a job can run.</p></div></li><li><span>02</span><div><h3>Strengthen ongoing operations</h3><p>Stable addressing/DNS, network hardening, off-machine backups, log retention and tested recovery procedures.</p></div></li><li><span>03</span><div><h3>Expand deliberately</h3><p>Document new-user and new-node procedures. Add GPU scheduling, scientific multi-node applications or accounting according to your workloads.</p></div></li></ol><div class="notice"><strong>Connect the guide to your own lab</strong><p>Keep local hostnames, login instructions, actual queues, environment/data paths and support contacts in a separate lab message or internal guide. Link colleagues here for general concepts, then explain which local values and policies replace the examples.</p></div></section>
-      <footer><div><strong>Slurm Field Guide</strong><p>General guidance, illustrated by a three-machine demo. No private runbook or logs are bundled.</p></div><a href="https://slurm.schedmd.com/quickstart_admin.html" target="_blank" rel="noopener noreferrer">Administrator reference ↗</a></footer>
+      <section class="content-section" id="check" aria-labelledby="check-title">
+        <div class="section-heading"><span class="eyebrow">04 / CHECK BEFORE CALCULATING</span><h2 id="check-title">Check, then run.</h2><p>Keep the first check small. Passing a syntax check does not prove a future analysis will work or fit in memory.</p></div>
+        <h3>A. Check the Bash syntax</h3>
+        <div class="code-block"><div class="code-header"><span>No submission or execution</span><button class="copy-button" type="button">Copy</button></div><pre><code>bash -n job.sbatch</code></pre></div>
+        <p>Silence normally means the shell syntax passed. This does not run Python or validate Slurm's resource options.</p>
+        <h3>B. Ask Slurm to check the resource request</h3>
+        <div class="code-block"><div class="code-header"><span>Scheduler check · no calculation submitted</span><button class="copy-button" type="button">Copy</button></div><pre><code>sbatch --test-only job.sbatch</code></pre></div>
+        <p>This checks the request with Slurm without submitting a real job. It does not execute the batch file, activate Conda or test your Python code. A small real run is still needed. See the <a href="https://slurm.schedmd.com/sbatch.html" target="_blank" rel="noopener noreferrer">sbatch reference</a>.</p>
+        <details class="command-explainer"><summary>Optional: add a Python syntax-check mode <span class="expand" aria-hidden="true">+</span></summary><div class="step-body">
+          <p>The simple batch file above runs the calculation directly. If you want a separate check-only job, insert this snippet <strong>immediately before the srun calculation line</strong>, after Conda activation and JOB_START:</p>
+          <div class="code-block"><div class="code-header"><span>Optional addition to job.sbatch</span><button class="copy-button" type="button">Copy</button></div><pre><code>if [[ ${1:-} == --check-only ]]; then
+    srun python -m py_compile myscript.py
+    echo CHECK_ONLY_OK
+    exit 0
+fi</code></pre></div>
+          <p>Only after adding that snippet, submit the check as:</p>
+          <div class="code-block"><div class="code-header"><span>A real, small Slurm job · snippet required</span><button class="copy-button" type="button">Copy</button></div><pre><code>sbatch --time=00:02:00 job.sbatch --check-only</code></pre></div>
+          <p>Read its slurm-pi-JOBID.out log. Expect CHECK_ONLY_OK, without trial results or JOB_COMPLETE: the snippet exits before the calculation. It may create __pycache__. This checks syntax, not imports, inputs or scientific correctness. <code>--check-only</code> is our optional script argument, not a Slurm option. Without the snippet, it does not skip the calculation. No <code>--run</code> argument is needed for normal submissions.</p>
+        </div></details>
+      </section>
+
+      <section class="content-section" id="run" aria-labelledby="run-title">
+        <div class="section-heading"><span class="eyebrow">05 / SUBMIT THE CALCULATION</span><h2 id="run-title">Now let it compute.</h2><p>After checking the request, submit a small calculation using the same two files.</p></div>
+        <div class="code-block"><div class="code-header"><span>Runs the workload set in myscript.py</span><button class="copy-button" type="button">Copy</button></div><pre><code>sbatch job.sbatch</code></pre></div>
+        <p>Slurm returns a new job ID. Accepted does not mean started or completed; the job may wait. Repeating sbatch submits another job, not a connection to the first.</p>
+        <p>If your run ID is 124, its printed estimates and errors are in <code>slurm-pi-124.out</code>. There is no separate JSON/result file to manage.</p>
+        <div class="code-block"><div class="code-header"><span>Read the result · replace 124 with your job ID</span><button class="copy-button" type="button">Copy</button></div><pre><code>cat slurm-pi-124.out</code></pre></div>
+        <p>Look for the trial estimates, <code>COUNTS</code>, <code>SIMULATION_COMPLETE</code> and <code>JOB_COMPLETE</code>. The log is in the project directory on the execution node, not automatically on your laptop. You may disconnect after submitting; do not reboot the compute machine.</p>
+      </section>
+
+      <section class="content-section" id="monitor" aria-labelledby="monitor-title">
+        <div class="section-heading"><span class="eyebrow">06 / EVERYDAY COMMANDS</span><h2 id="monitor-title">Watch. Inspect. Stop deliberately.</h2><p>Run these individually from your cluster terminal. Replace 124 and the log filename with your current job's values.</p></div>
+        <h3>Your queued and running jobs</h3>
+        <div class="code-block"><div class="code-header"><span>Read-only</span><button class="copy-button" type="button">Copy</button></div><pre><code>squeue -u "$USER"</code></pre></div>
+        <p><code>PD</code> means pending; the reason explains why it is waiting. <code>R</code> means running. <code>CG</code> means completing/cleanup. A short example may finish before you check. Do not resubmit just because it is pending.</p>
+        <h3>Which machine, resources and paths?</h3>
+        <div class="code-block"><div class="code-header"><span>Read-only · job records may expire</span><button class="copy-button" type="button">Copy</button></div><pre><code>scontrol show job 124</code></pre></div>
+        <p>Inspect <code>JobState</code>, <code>NodeList</code>, CPU/memory requests, <code>WorkDir</code>, <code>StdOut</code> and <code>ExitCode</code>. <code>JOB_START host=…</code> in the log also records where Python ran.</p>
+        <h3>Follow progress live</h3>
+        <div class="code-block"><div class="code-header"><span>Ctrl+C exits the viewer, not the job</span><button class="copy-button" type="button">Copy</button></div><pre><code>tail -f slurm-pi-124.out</code></pre></div>
+        <p>Look for the <code>Trial … pi estimate</code> lines, <code>SIMULATION_COMPLETE</code> and <code>JOB_COMPLETE</code>. Leaving <code>squeue</code> alone does not prove success: cancellation, timeout and failure also remove jobs. Preserve logs; persistent accounting commands such as <code>sacct</code> depend on site configuration.</p>
+        <h3>Cancel your job</h3>
+        <div class="code-block"><div class="code-header"><span>Changes state · only your intended job</span><button class="copy-button" type="button">Copy</button></div><pre><code>scancel 124</code></pre></div>
+        <p>This stops the computation. The log may contain partial progress, but this example has no checkpoint/resume support; a cancelled run is not a completed result. Do not use <code>sudo</code>, broad cancellation commands or kill another user's processes.</p>
+        <details class="command-explainer"><summary>Common first-job errors <span class="expand" aria-hidden="true">+</span></summary><div class="step-body"><p><strong>Invalid node/partition:</strong> edit the fictional values and confirm queue access with your lab. <strong>Unable to open batch file:</strong> check your directory and whether both files reached the cluster. <strong>Python/file missing on the node:</strong> fix that node's environment/path; a same-named local folder elsewhere is not shared automatically.</p><p><strong>No log yet:</strong> the job may still be pending. <strong>CHECK_ONLY_OK but no simulation:</strong> the optional check-only snippet skipped the calculation; submit without --check-only to calculate. <strong>Config discovery error:</strong> use your site's instructions; some installations require <code>env SLURM_CONF=/etc/slurm/slurm.conf</code> before Slurm commands.</p></div></details>
+      </section>
+
+      <section class="content-section" id="scale" aria-labelledby="scale-title">
+        <div class="section-heading"><span class="eyebrow">07 / TURN UP THE WORKLOAD</span><h2 id="scale-title">Change two numbers.</h2><p>Increase the settings at the top of myscript.py when you are ready for a heavier calculation.</p></div>
+        <div class="code-block"><div class="code-header"><span>Edit these Python lines in myscript.py · not terminal commands</span><button class="copy-button" type="button">Copy</button></div><pre><code>realisations = 200
+samples = 1000000</code></pre></div>
+        <p>This draws 200 million points instead of the small default 50,000. Runtime depends on the machine and Python version. It processes points one at a time, so it does not need to store a giant array in RAM.</p>
+        <p>Save the file, then submit with the same command:</p>
+        <div class="code-block"><div class="code-header"><span>Slurm runs the new settings</span><button class="copy-button" type="button">Copy</button></div><pre><code>sbatch job.sbatch</code></pre></div>
+        <p>Do not edit the Python file while an earlier job is waiting to read it. The ten-minute tutorial deadline still applies; estimate runtime with a small trial before deliberately requesting a longer deadline. After increasing these values, do not run the calculation directly in your login terminal.</p>
+        <div class="notice"><strong>More requested CPUs do not parallelize a loop</strong><p>The calculation still uses one CPU. More CPUs need actual workers or threads; several nodes need separate jobs/arrays or distributed code. Neither changing --cpus-per-task nor --nodes creates that logic.</p></div>
+      </section>
+      <section class="content-section" id="array" aria-labelledby="array-title">
+        <div class="section-heading"><span class="eyebrow">08 / USE AVAILABLE COMPUTE NODES</span><h2 id="array-title">Run independent parts.</h2><p>The π estimator stays the same. A job array runs the same short script with different part numbers, so each job draws different random points. Each part still runs on one node and one CPU.</p></div>
+        <div class="notice"><strong>Make the files accessible first</strong><p>Put myscript.py and job-array.sbatch in an approved shared project folder available at the same path on every eligible node, and submit from there. A site-configured ~/Server may provide this; simply creating a folder called Server does not. Conda and the mypyenv environment (or your chosen Python alternative) must be available on each eligible node. Edit the Conda path in job-array.sbatch too. The small job logs in this lesson also go into the shared project folder.</p></div>
+        <h3>A. The same Python script, one extra argument</h3>
+        <p>The first lesson uses <code>part = 0</code>. For arrays, the batch file passes the index as an argument. The small <code>sys.argv</code> block reads it; <code>42 + part * realisations + trial</code> assigns a distinct seed to each trial. Python still knows nothing about machine names or Slurm.</p>
+        <p>With the default five realisations, part 0 uses seeds 42–46, part 1 uses 47–51, and so on. Every part prints its estimate and a <code>COUNTS inside sampled</code> line using exactly the same counting formula.</p>
+        <nav class="download-links" aria-label="Download array lesson files"><a href="examples/pi-demo/myscript.py" download>myscript.py ↓</a><a href="examples/pi-demo/job-array.sbatch" download>job-array.sbatch ↓</a></nav>
+        <h3>B. Save the array batch file</h3>
+        <p>Save this beside myscript.py. Use a real queue that includes your intended nodes. This example deliberately omits the first job's nodelist pin.</p>
+        <details class="example-explainer"><summary><span>job-array.sbatch</span><span class="expand" aria-hidden="true">+</span></summary><div class="tutorial-detail"><div class="code-block" data-example-source="examples/pi-demo/job-array.sbatch"><div class="code-header"><span>job-array.sbatch · edit the queue if needed</span><button class="copy-button" type="button" disabled>Copy</button></div><pre><code>Loading downloadable source…</code></pre></div><noscript><p>Use the <a href="examples/pi-demo/job-array.sbatch" download>array download</a> to read the code.</p></noscript></div></details>
+        <p><code>--array=0-5%3</code> creates six parts, with at most three running at once. The CPU/RAM request applies to each part. Slurm supplies <code>SLURM_ARRAY_TASK_ID</code>; the srun line passes it to Python. <code>%A_%a</code> gives every part a separate log using the array ID and index.</p>
+        <div class="notice warning"><strong>Three concurrent jobs does not mean three nodes</strong><p>Slurm may use different nodes or place several parts on one machine. %3 is a concurrency limit, not a placement rule. Busy/ineligible nodes may not be used. For a small calculation, queue and startup overhead can outweigh parallel speedup.</p></div>
+        <h3>C. Check, submit and inspect</h3>
+        <div class="code-block"><div class="code-header"><span>Check the shell syntax</span><button class="copy-button" type="button">Copy</button></div><pre><code>bash -n job-array.sbatch</code></pre></div>
+        <div class="code-block"><div class="code-header"><span>Check the array's scheduler request · no job submitted</span><button class="copy-button" type="button">Copy</button></div><pre><code>sbatch --test-only job-array.sbatch</code></pre></div>
+        <p>As before, this does not run Python or test the environment. Keep the first real array small, and inspect the logs.</p>
+        <div class="code-block"><div class="code-header"><span>Submit all six calculation parts</span><button class="copy-button" type="button">Copy</button></div><pre><code>sbatch job-array.sbatch</code></pre></div>
+        <p>If the run's array ID is 200, use your actual ID in these commands:</p>
+        <div class="code-block"><div class="code-header"><span>One row per part · inspect its node</span><button class="copy-button" type="button">Copy</button></div><pre><code>squeue -r -j 200 -o '%.18i %.9T %.20N %R'</code></pre></div>
+        <div class="code-block"><div class="code-header"><span>Read part 0's calculation</span><button class="copy-button" type="button">Copy</button></div><pre><code>cat slurm-pi-array-200_0.out</code></pre></div>
+        <p>Read the other parts in the same way. <code>ARRAY_START … host=…</code> records the execution machine. Each successful run has trial estimates, COUNTS, SIMULATION_COMPLETE and <code>ARRAY_COMPLETE</code>. You can stop here: independent simulations with separate results are already a useful array workflow.</p>
+        <details class="example-explainer"><summary><span>D. Optional: combine the results with a short Python script</span><span class="expand" aria-hidden="true">+</span></summary><div class="tutorial-detail">
+          <p>To obtain one estimate using all parts, add their hit counts K and sample counts N, then compute <code>4 × ΣK / ΣN</code>. This is the same π estimator, now using points from several jobs.</p>
+          <p>Save the commented helper beside your logs. It reads the COUNTS lines directly; there are no JSON files to manage. Its basic checks require the expected number of different logs and a completed calculation in each.</p>
+          <nav class="download-links" aria-label="Download optional result helper"><a href="examples/pi-demo/combine_results.py" download>combine_results.py ↓</a></nav>
+          <div class="code-block" data-example-source="examples/pi-demo/combine_results.py"><div class="code-header"><span>combine_results.py · small, commented helper</span><button class="copy-button" type="button" disabled>Copy</button></div><pre><code>Loading downloadable source…</code></pre></div>
+          <noscript><p>Use the <a href="examples/pi-demo/combine_results.py" download>combiner download</a> to read the code.</p></noscript>
+          <div class="code-block"><div class="code-header"><span>Expect six completed logs · replace 200 with your run ID</span><button class="copy-button" type="button">Copy</button></div><pre><code>python3 combine_results.py 6 slurm-pi-array-200_*.out</code></pre></div>
+          <p>Use only logs from the same successful array and matching Python settings. This small teaching helper does not check every possible settings mismatch or overlapping trial range. Never combine check-only, failed or cancelled jobs. Do not average rounded estimates when sample counts differ.</p>
+        </div></details>
+        <details class="command-explainer"><summary>Optional: deliberately use three different nodes <span class="expand" aria-hidden="true">+</span></summary><div class="step-body"><p>Replace the fictional node names with real compute machines. These commands submit one part per node in three separate single-element arrays; each has its own ID. The shared code must be available on all three. A pinned job may wait if that machine is busy.</p>
+          <div class="code-block"><div class="code-header"><span>Part 0 · first node</span><button class="copy-button" type="button">Copy</button></div><pre><code>sbatch --array=0 --nodelist=node-a job-array.sbatch</code></pre></div>
+          <div class="code-block"><div class="code-header"><span>Part 1 · second node</span><button class="copy-button" type="button">Copy</button></div><pre><code>sbatch --array=1 --nodelist=node-b job-array.sbatch</code></pre></div>
+          <div class="code-block"><div class="code-header"><span>Part 2 · third node</span><button class="copy-button" type="button">Copy</button></div><pre><code>sbatch --array=2 --nodelist=node-c job-array.sbatch</code></pre></div>
+          <p>Inspect the host in each log. If you want to pool only these three parts, explicitly list those three successful logs with expected count 3; do not mix them with the full six-part array.</p>
+        </div></details>
+        <h3>E. Cancel deliberately</h3>
+        <div class="code-block"><div class="code-header"><span>Cancel the remaining parts · replace 200</span><button class="copy-button" type="button">Copy</button></div><pre><code>scancel 200</code></pre></div>
+        <p>Use <code>scancel 200_2</code> to cancel only part 2 instead. Cancellation may leave partial logs; this example has no checkpoint/resume support.</p>
+        <p class="caption">See the <a href="https://slurm.schedmd.com/job_array.html" target="_blank" rel="noopener noreferrer">Slurm job-array guide</a> for index ranges, concurrency limits and identifiers. The same pattern applies to independent subjects, parameter combinations or repeated simulations.</p>
+      </section>
+
+      <section class="content-section" id="project" aria-labelledby="project-title">
+        <div class="section-heading"><span class="eyebrow">09 / YOUR OWN PROJECT</span><h2 id="project-title">Keep the workflow. Change the calculation.</h2><p>You have used the same myscript.py for the single-node and job-array examples. Use those patterns for your own analysis instead of starting a separate submission system.</p></div>
+        <div class="step-list">
+          <details><summary><span class="step-number">01</span><span>Point the batch file to your runner</span><span class="expand" aria-hidden="true">+</span></summary><div class="step-body"><p>Replace myscript.py with your real runner and adapt its arguments/output paths. Keep code, inputs and environment available on every eligible execution node, or pin to a node containing them. Slurm copies the batch file, not the rest of your project.</p></div></details>
+          <details><summary><span class="step-number">02</span><span>Initialize the environment inside the job</span><span class="expand" aria-hidden="true">+</span></summary><div class="step-body"><p>The batch example already selects mypyenv. For your analysis, choose the environment containing your packages and update its installation path if needed. Do not rely on whichever environment happens to be active in your login terminal.</p><p>For Conda, adapt these same two lines to your actual installation/environment. They belong inside your batch file, not in a new Python example:</p><div class="code-block"><div class="code-header"><span>Already in the batch example · adapt to your installation</span><button class="copy-button" type="button">Copy</button></div><pre><code>source /path/to/conda/etc/profile.d/conda.sh
+conda activate mypyenv</code></pre></div><p>For a virtual environment, use its Python executable or the site's documented activation method. The environment must exist on the node where the job runs.</p></div></details>
+          <details><summary><span class="step-number">03</span><span>Implement a genuine lightweight check</span><span class="expand" aria-hidden="true">+</span></summary><div class="step-body"><p>The optional snippet in section 4 adds --check-only by compiling Python, not executing it. The basic batch file has no custom modes. Compilation tests syntax only. For a real project, add deliberate lightweight checks for imports, inputs, settings and output paths before heavy work; passing a syntax check is not a full application validation.</p></div></details>
+          <details><summary><span class="step-number">04</span><span>Measure before requesting more</span><span class="expand" aria-hidden="true">+</span></summary><div class="step-body"><p>Start with a small input. Request total memory including workers/buffers and a suitable runtime budget. Our serial demo uses one CPU; additional CPUs need actual parallel code. Multiple nodes need independent jobs/arrays or a distributed program, not just a larger node request.</p></div></details>
+          <details><summary><span class="step-number">05</span><span>Keep results separate and coordinate shared use</span><span class="expand" aria-hidden="true">+</span></summary><div class="step-body"><p>Give concurrent runs separate logs, results and scratch paths. Output is written where the execution program directs it; shared inputs do not imply every output should go onto shared storage. Follow local queue/workstation-priority rules and coordinate maintenance. Slurm user commands do not need sudo.</p></div></details>
+        </div>
+        <div class="notice"><strong>Your reusable sequence</strong><p>Prepare → write Python → request resources → check → submit → monitor → inspect results. Ask your lab for its real queue/node names, storage layout, environment instructions and support contacts; these are site-specific.</p></div>
+      </section>
+
+      <footer><div><strong>Slurm Field Guide</strong><p>One sequential user guide. Separate setup and maintenance guidance for administrators. No private runbook or logs are bundled.</p></div><a href="https://slurm.schedmd.com/quickstart_admin.html" target="_blank" rel="noopener noreferrer">Administrator reference ↗</a></footer>
     </main>
   </div>
   <div class="sr-only" id="copy-status" role="status" aria-live="polite"></div>

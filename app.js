@@ -1,4 +1,15 @@
 (() => {
+  // Preserve bookmarks from before setup/maintenance moved off the user page.
+  const redirectLegacyAdminLink = () => {
+    if ((location.pathname.endsWith('/') || location.pathname.endsWith('/index.html')) &&
+        ['#setup', '#storage', '#maintenance', '#next'].includes(location.hash)) {
+      location.replace(new URL(`maintenance.html${location.hash}`, location.href));
+      return true;
+    }
+    return false;
+  };
+  if (redirectLegacyAdminLink()) return;
+  window.addEventListener('hashchange', redirectLegacyAdminLink);
   const root = document.documentElement;
   const themeButton = document.querySelector('.theme-toggle');
   let savedTheme;
@@ -22,10 +33,13 @@
     menu.setAttribute('aria-expanded', String(open));
   });
   document.addEventListener('keydown', (event) => { if (event.key === 'Escape') closeMenu(); });
-  const links = [...document.querySelectorAll('nav a')];
+  // Page links/downloads coexist with section anchors in the user-first menu.
+  const links = [...document.querySelectorAll('nav a[href^="#"]')]
+    .filter((link) => document.querySelector(link.getAttribute('href')));
   links.forEach((link) => link.addEventListener('click', closeMenu));
   const sections = links.map((link) => document.querySelector(link.getAttribute('href')));
   const updateActive = () => {
+    if (!sections.length) return;
     let active = sections[0];
     sections.forEach((section) => { if (section.getBoundingClientRect().top <= 140) active = section; });
     links.forEach((link) => {

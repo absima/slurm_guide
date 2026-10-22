@@ -1,51 +1,104 @@
-# Public documentation frontend
+# Slurm Field Guide — public website
 
-General Slurm setup, usage and maintenance guide, illustrated with three
-fictional machines. Three is an example size, not a requirement. Single-node
-CPU examples, direct config distribution and shared-workstation owner/headroom
-policies are teaching choices, not universal Slurm limits/defaults. Local lab
-instructions can be sent separately (for example, via Discord) after publication.
+Static, user-first Slurm documentation for the existing Netlify site; also
+compatible with GitHub Pages. No framework/build step, analytics or private
+document imports.
 
-Standalone static site for GitHub Pages. No build tools, server-side code,
-external fonts, analytics, private document imports or application dependencies.
-index.html is the content source; styles.css/app.js handle layout/interactions.
+## Pages and teaching order
+
+index.html is one sequential user guide:
+1. Prepare a project folder.
+2. Understand the short myscript.py quarter-disk Monte Carlo calculation.
+3. Write job.sbatch.
+4. Check shell syntax and Slurm's resource request.
+5. Submit the calculation.
+6. Monitor, read logs and cancel deliberately.
+7. Increase realisations/samples by editing two Python settings.
+8. Run independent parts with a job array; optionally combine their counts.
+9. Adapt the workflow to a real project/environment.
+
+maintenance.html holds administrator setup, shared-storage configuration,
+maintenance/recovery and planning. The header Users / Administrators switch
+defaults to Users. This is navigation, not password protection. The old
+tutorial.html redirects to the corresponding main-page section.
+
+## Simple example files
+
+- examples/pi-demo/myscript.py: short counting loops, two workload settings,
+  reproducible per-trial seeds and printed results. No argument parser,
+  JSON, filesystem management, application check mode or main-function wrapper.
+- Its optional positional part number is introduced only in the array lesson.
+  Distinct trial seeds preserve the same estimator: 4 * total hits / total points.
+  The final COUNTS line makes later pooling possible without separate result files.
+- examples/pi-demo/job.sbatch: requests one node/task/CPU, 1 GiB and ten minutes.
+  Edit fictional node-a/shared and the Conda installation path for the site.
+  Activates mypyenv, prints job markers and launches srun python myscript.py.
+  Submit with sbatch job.sbatch; no custom modes or --run argument required.
+  set -e prevents success markers after failed activation or task execution.
+- An optional page snippet adds --check-only before the calculation.
+  Only after insertion does this argument skip calculation. This is a real
+  Slurm job, may create __pycache__, and checks Python syntax only—not imports,
+  inputs, runtime correctness or resource needs.
+- examples/pi-demo/job-array.sbatch: six one-CPU jobs, at most three concurrent.
+  No node pin; several jobs may run on one machine. Each passes its array index
+  to the same Python script. Shared paths and mypyenv on eligible nodes are required.
+  Edit its Conda path too; submit with sbatch job-array.sbatch.
+- examples/pi-demo/combine_results.py: small commented optional helper. Takes an
+  expected log count and filenames, requires different completed logs with one
+  COUNTS record each, and pools their integer hit/sample counts. It is not a
+  full provenance/overlap/settings validator: use matching parts from one run.
+
+--check-only belongs only to the optional snippet, not native Slurm.
+Slurm --test-only is a separate scheduler test; it does not run the batch file.
+The site does not submit jobs, change queues/configuration or run commands.
+
+styles.css/app.js provide themes, audience/section navigation, copy controls and
+legacy admin-link handling. tutorial.js loads canonical downloadable sources
+using textContent; displayed examples and downloads therefore match.
 
 ## Preview locally
 
-From slurm-cluster/frontend:
+From this frontend directory:
 
 ```bash
-python3 -m http.server 8765 --bind 127.0.0.1
+python3 -m http.server 8770 --bind 127.0.0.1
 ```
 
-Open http://127.0.0.1:8765. Stop the preview with Ctrl+C. Serve **only this
-directory**, not the parent workspace containing internal records.
+Open http://127.0.0.1:8770/. Stop with Ctrl+C. Serve only this public directory,
+not the private parent workspace. Use HTTP rather than file:// so code panels
+can load. Downloads and manual links remain available with JavaScript off.
+
+## Verify
+
+```bash
+python3 -B -m unittest discover -s tests -v
+```
+
+Ten local tests cover the short reproducible calculation, unchanged serial/
+partitioned hit counts, count pooling, incomplete/duplicate log rejection,
+batch simplicity/syntax, mocked Conda/check/run/array launches and failure
+handling, links/anchors, geometry
+sample classification, ordered user navigation and audience separation.
+These tests do not use real Slurm scheduling or node placement. Cluster
+acceptance must be done separately. Browser checks cover responsive layout,
+source panels and navigation; local checks are not a deployment.
+Previous browser checks covered source/download matching, visible short Python
+code, initially collapsed optional combining, mobile width and JavaScript errors.
+The latest batch simplification was checked locally with mocked Conda/srun,
+not a live cluster or a new browser session. The serial-versus-partitioned count test confirms the estimator
+and reproducible trial sequences are preserved.
 
 ## Publish safely
 
-Create a separate public documentation repository and copy **only the contents
-of this frontend directory** into its root. Do not make the cluster workspace
-repository public, commit its private history to the documentation repository,
-or copy the runbook, logs, inventories, configs or site-specific scripts.
+Redeploy the complete frontend directory to the existing Netlify site,
+including maintenance.html, tutorial.html, tutorial.js and examples/.
+GitHub Pages can publish these same files from the documentation repository root.
 
-In the documentation repository's Settings → Pages, select deployment from
-the default branch's root directory. Relative asset links support both a
-project Pages URL and a custom domain. No workflow or publishing action has
-been created/executed from this workspace.
+Never publish the private parent workspace/history: actual account/IP mappings,
+runbooks, inventories, logs, keys and cluster configuration stay private.
+Examples use fictional node names and generic paths. Keep lab-specific queue,
+storage and support instructions in a separate internal reference.
 
-Before publishing, review the frontend files for personal/infrastructure data
-and verify all examples remain generic. This site's admin examples can change
-node state: they are labelled and must be adapted/used deliberately. Copy buttons
-copy text only; they never execute a command. All site examples use fictional
-node/environment names and placeholder paths.
-
-## Content scope
-
-- Setup: ten expandable stages and acceptance checks.
-- Usage: ordinary-user batch creation, resources, Conda, monitoring/cancellation.
-- Maintenance: planned reboots, address changes and preserving setup artifacts.
-- Roadmap: environment/data portability, hardening and future expansion.
-
-Operational details belong in the private cluster documentation. This site
-must not fetch or link to private workspace documents. New public content needs
-sanitization before it is added here.
+Old index.html #setup/#storage/#maintenance/#next links redirect to the admin
+page with JavaScript enabled. Old tutorial deep links redirect to the same
+sections of the consolidated user guide.
