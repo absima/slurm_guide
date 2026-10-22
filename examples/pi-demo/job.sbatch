@@ -1,7 +1,6 @@
 #!/usr/bin/env bash
 #SBATCH --job-name=pi-demo
 #SBATCH --partition=shared
-#SBATCH --nodelist=node-a
 #SBATCH --nodes=1
 #SBATCH --ntasks=1
 #SBATCH --cpus-per-task=1

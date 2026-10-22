@@ -7,7 +7,8 @@ document imports.
 ## Pages and teaching order
 
 index.html is one sequential user guide:
-1. Prepare a project folder.
+1. Explain the existing private, per-user ~/Server shared storage and prepare
+   ~/Server/slurm-pi-demo there. Do not create a fake Server when access fails.
 2. Understand the short myscript.py quarter-disk Monte Carlo calculation.
 3. Write job.sbatch.
 4. Check shell syntax and Slurm's resource request.
@@ -31,7 +32,7 @@ tutorial.html redirects to the corresponding main-page section.
   Distinct trial seeds preserve the same estimator: 4 * total hits / total points.
   The final COUNTS line makes later pooling possible without separate result files.
 - examples/pi-demo/job.sbatch: requests one node/task/CPU, 1 GiB and ten minutes.
-  Edit fictional node-a/shared for the site.
+  Edit the example shared queue name for the site. No node pin; Slurm selects a node.
   Prints job markers and launches srun python3 myscript.py; no Conda required.
   Submit with sbatch job.sbatch; no custom modes or --run argument required.
   set -e prevents success markers after failed activation or task execution.
@@ -40,7 +41,7 @@ tutorial.html redirects to the corresponding main-page section.
   Slurm job, may create __pycache__, and checks Python syntax only—not imports,
   inputs, runtime correctness or resource needs.
 - examples/pi-demo/job-array.sbatch: six one-CPU jobs, at most three concurrent.
-  No node pin; several jobs may run on one machine. Each passes its array index
+  Like the first job, no node pin; several jobs may run on one machine. Each passes its array index
   to the same Python script. Shared paths and Python 3 on eligible nodes are required.
   Submit with sbatch job-array.sbatch.
 - examples/pi-demo/combine_results.py: small commented optional helper. Takes an
@@ -57,6 +58,10 @@ The site does not submit jobs, change queues/configuration or run commands.
 styles.css/app.js provide themes, audience/section navigation, copy controls and
 legacy admin-link handling. tutorial.js loads canonical downloadable sources
 using textContent; displayed examples and downloads therefore match.
+
+Code and relative output logs stay together in the shared project directory.
+Submit from that directory; other local home folders are not automatically shared.
+Server is an administrator-configured lab storage path, not built-in Slurm storage.
 
 ## Preview locally
 
@@ -76,7 +81,7 @@ can load. Downloads and manual links remain available with JavaScript off.
 python3 -B -m unittest discover -s tests -v
 ```
 
-Ten local tests cover the short reproducible calculation, unchanged serial/
+Eleven local tests cover shared-project instructions, the short reproducible calculation, unchanged serial/
 partitioned hit counts, count pooling, incomplete/duplicate log rejection,
 batch simplicity/syntax, mocked Conda/check/run/array launches and failure
 handling, links/anchors, geometry
